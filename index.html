@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tarjeta 10</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tarjeta 10: tarjetas de lealtad digitales para tu negocio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Layout: una columna estrecha tipo billetera; la tarjeta del negocio es la pieza protagonista, el resto es mostrador. */
+:root{
+  --bg:#F3F2EE; --surface:#FFFFFF; --ink:#16161A; --muted:#6B6A72; --line:#E2E0DA;
+  --t10:#E8452C;           /* rojo sello Tarjeta 10 */
+  --ok:#1F8A4C; --warn:#B7791F; --bad:#C0392B;
+  --display:"Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111114; --surface:#1B1B20; --ink:#F1F0EC; --muted:#A3A1AA; --line:#2C2C33; --t10:#FF5A3D; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111114; --surface:#1B1B20; --ink:#F1F0EC; --muted:#A3A1AA; --line:#2C2C33; --t10:#FF5A3D; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 48px}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.wide{max-width:760px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+h1{font-size:1.7rem;font-weight:800;font-stretch:90%}
+h2{font-size:1.25rem;font-weight:800;font-stretch:92%}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+.label{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* Marca Tarjeta 10 */
+.brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.brand a{color:inherit;text-decoration:none}
+.logo{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:900;font-size:1.05rem;font-stretch:85%;letter-spacing:.01em}
+.logo svg{height:28px;width:auto}
+
+/* Barra de demo */
+.demo{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px}
+.demo .row{display:flex;gap:6px;flex-wrap:wrap}
+.demo button{background:transparent;color:var(--bg);border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);border-radius:999px;padding:6px 12px;font:600 .82rem var(--body);cursor:pointer}
+.demo button[aria-pressed="true"]{background:var(--t10);border-color:var(--t10);color:#fff}
+.demo select{font:500 .85rem var(--body);border-radius:8px;padding:6px 8px;border:0}
+
+/* Formularios */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem}
+input[type=text],input[type=tel],input[type=password],input[type=search]{font:500 1.05rem var(--body);padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+input:focus-visible,button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid color-mix(in srgb,var(--t10) 55%,transparent);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--muted)}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--t10);flex:none}
+.btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font:700 1rem var(--body);cursor:pointer;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.brandbtn{background:var(--b1);color:var(--b1ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.red{background:var(--t10);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.err{color:var(--bad);font-weight:600;font-size:.9rem}
+.err:empty{display:none}
+
+/* Encabezado de negocio */
+.biz{display:flex;align-items:center;gap:12px}
+.bizlogo{width:52px;height:52px;border-radius:12px;background:var(--b1);color:var(--b2);display:grid;place-items:center;font:900 1.2rem var(--display);flex:none;overflow:hidden;border:2px solid var(--b2)}
+.bizlogo img{width:100%;height:100%;object-fit:cover}
+
+/* LA TARJETA */
+.card{--b1:#111;--b2:#F5B700;background:var(--b1);color:var(--b1ink);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+.card::after{content:"";position:absolute;inset:auto -60px -80px auto;width:220px;height:220px;border-radius:50%;border:26px solid color-mix(in srgb,var(--b2) 16%,transparent);pointer-events:none}
+.card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card .who{font:800 1.35rem var(--display);font-stretch:92%}
+.card .code{font:700 .8rem var(--mono);letter-spacing:.06em;opacity:.8}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.st{aspect-ratio:1;border-radius:50%;border:2px dashed color-mix(in srgb,var(--b1ink) 38%,transparent);display:grid;place-items:center;font:800 .95rem var(--display);color:color-mix(in srgb,var(--b1ink) 45%,transparent);max-width:100%}
+.st.on{border:0;background:var(--b2);color:var(--b2ink);transform:rotate(-8deg)}
+.st.on svg{width:62%;height:62%}
+.st.goal{border-style:solid;border-color:var(--b2);color:var(--b2)}
+.st.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.2) rotate(-40deg)}100%{transform:scale(1) rotate(-8deg)}}
+.prog{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.9rem}
+.prog b{font:900 1.6rem var(--display);font-variant-numeric:tabular-nums}
+.prize{background:var(--b2);color:var(--b2ink);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-weight:700}
+.prize .n{font:900 1.8rem var(--display);line-height:1}
+.qrbox{background:#fff;border-radius:12px;padding:10px;display:flex;gap:12px;align-items:center;color:#16161A}
+.qrbox .q{width:96px;height:96px;flex:none}
+.qrbox .q img,.qrbox .q canvas{width:96px!important;height:96px!important}
+.rule{font-size:.85rem;opacity:.85}
+
+.hist{display:flex;flex-direction:column}
+.hist div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:.9rem;font-variant-numeric:tabular-nums}
+.hist div:last-child{border:0}
+.tag{font:700 .72rem var(--body);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--line)}
+.tag.SELLO{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.tag.CANJE{background:color-mix(in srgb,var(--t10) 18%,transparent);color:var(--t10)}
+.tag.PREMIO{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
+
+/* Cajero */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font:900 1.45rem var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:.72rem;color:var(--muted);line-height:1.2}
+@media (max-width:440px){.stats{grid-template-columns:repeat(2,1fr)}}
+.searchrow{display:flex;gap:8px}
+.searchrow input{flex:1;min-width:0}
+.results{display:flex;flex-direction:column;gap:6px}
+.res{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.res:hover{border-color:var(--ink)}
+.res .meta{font-size:.82rem;color:var(--muted);font-family:var(--mono)}
+.pill{font:800 .85rem var(--display);padding:4px 10px;border-radius:999px;background:var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.gift{background:var(--t10);color:#fff}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stepper{display:flex;align-items:center;gap:10px;justify-content:center}
+.stepper button{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:800 1.2rem var(--body);cursor:pointer}
+.stepper output{font:900 1.6rem var(--display);min-width:2ch;text-align:center}
+.confirm{border:2px solid var(--t10);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px)}
+.big{font:900 2.4rem var(--display);font-stretch:85%;line-height:1}
+.poster{background:#fff;color:#16161A;border-radius:var(--r);padding:22px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.poster .pq img,.poster .pq canvas{width:220px!important;height:220px!important}
+#reader{width:100%;border-radius:12px;overflow:hidden}
+.landing .hero{display:flex;flex-direction:column;gap:12px;padding-block:20px}
+.landing .hero .big{font-size:3rem}
+.feat{display:grid;gap:10px}
+.feat div{display:flex;gap:10px;align-items:flex-start}
+.feat i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--t10);color:#fff;display:grid;place-items:center;font:800 .8rem var(--display);flex:none}
+@media (prefers-reduced-motion:reduce){.st.pop{animation:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="brand">
+    <a class="logo" href="./" aria-label="Tarjeta 10">
+      <svg viewBox="0 0 64 40" aria-hidden="true"><text x="2" y="33" font-family="Archivo, sans-serif" font-weight="900" font-size="38" fill="currentColor">1</text><circle cx="40" cy="20" r="15" fill="none" stroke="var(--t10)" stroke-width="5"/><circle cx="40" cy="20" r="8.5" fill="none" stroke="var(--t10)" stroke-width="1.6" stroke-dasharray="2.6 2.4"/><path d="M36 20.5l3 3 5.5-6" fill="none" stroke="var(--t10)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      TARJETA 10
+    </a>
+    <span class="small muted" id="whereami"></span>
+  </header>
+  <section class="demo" id="demoBar" hidden>
+    <div class="label" style="color:inherit;opacity:.75">Modo demostración · datos de ejemplo</div>
+    <div class="row">
+      <select id="demoBiz" aria-label="Negocio"></select>
+    </div>
+    <div class="row" role="group" aria-label="Pantalla">
+      <button data-v="registro">Registro (QR mostrador)</button>
+      <button data-v="tarjeta">Tarjeta del cliente</button>
+      <button data-v="cajero">Pantalla del cajero</button>
+    </div>
+  </section>
+  <main id="view" class="wrap" style="max-width:none;width:100%"></main>
+</div>
+
+<script>
+/* ============ CONFIGURACIÓN ============
+   API_URL: pega aquí la URL de la Aplicación web de Apps Script (termina en /exec).
+   Si queda vacío, la página corre en MODO DEMO con datos de ejemplo. */
+const CONFIG = {
+  API_URL: '',
+  BASE_URL: 'https://tarjeta10.com.co/',
+  WHATSAPP_VENTAS: '' // ej. 573001234567 para el botón "Quiero Tarjeta 10"
+};
+const DEMO = !CONFIG.API_URL;
+
+/* ============ UTILIDADES ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function lum(hex){const h=String(hex||'#000').replace('#','');const n=h.length===3?h.split('').map(x=>x+x).join(''):h.padEnd(6,'0');const [r,g,b]=[0,2,4].map(i=>{let v=parseInt(n.substr(i,2),16)/255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*r+.7152*g+.0722*b}
+const inkOn = hex => lum(hex) > .45 ? '#16161A' : '#FFFFFF';
+function paint(el, n){el.style.setProperty('--b1',n.color_principal);el.style.setProperty('--b2',n.color_secundario);el.style.setProperty('--b1ink',inkOn(n.color_principal));el.style.setProperty('--b2ink',inkOn(n.color_secundario))}
+function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function qr(el, text, size){el.innerHTML='';if(window.QRCode){new QRCode(el,{text,width:size,height:size,correctLevel:QRCode.CorrectLevel.M})}else{el.textContent=text}}
+const linkTarjeta = clave => CONFIG.BASE_URL + '?t=' + clave;
+const linkRegistro = id => CONFIG.BASE_URL + '?r=' + id;
+const STAMP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const GIFT_SVG = '<svg viewBox="0 0 24 24" width="55%" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+/* ============ API ============ */
+async function api(accion, datos={}){
+  const p = Object.assign({accion}, datos);
+  if (DEMO) return mock(p);
+  const r = await fetch(CONFIG.API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(p)});
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'Error');
+  return j.data;
+}
+
+/* ============ BACKEND DE DEMOSTRACIÓN (imita Code.gs) ============ */
+const DB_KEY = 't10_demo_v1';
+let DB;
+function seed(){
+  const now = Date.now(), d = n => new Date(now - n*864e5).toISOString();
+  return {
+    negocios:[
+      {id:'pizza-gourmet',nombre:'Pizza Gourmet',prefijo:'PG',logo_url:'',color_principal:'#0B0B0B',color_secundario:'#F5B700',sellos_meta:10,premio:'Pizza Junior de 3 ingredientes',regla:'1 sello por cada compra de $40.000 o más',link_resena_google:'https://www.google.com/search?q=Pizza+Gourmet+Apartad%C3%B3',whatsapp:'',pin_cajero:'1234',max_sellos_dia:2},
+      {id:'barberia',nombre:'Barbería Élite',prefijo:'BB',logo_url:'',color_principal:'#141414',color_secundario:'#C9A227',sellos_meta:10,premio:'Corte gratis',regla:'1 sello por cada corte',link_resena_google:'https://www.google.com/search?q=barber%C3%ADa+Apartad%C3%B3',whatsapp:'',pin_cajero:'4321',max_sellos_dia:1},
+      {id:'heladeria-demo',nombre:'Helados La Brisa',prefijo:'HB',logo_url:'',color_principal:'#FFD6E0',color_secundario:'#3A86FF',sellos_meta:8,premio:'Copa de 2 bolas',regla:'1 sello por cada helado',link_resena_google:'',whatsapp:'',pin_cajero:'1111',max_sellos_dia:3}
+    ],
+    clientes:[
+      {id:'c1',negocio_id:'pizza-gourmet',codigo:'PG-48213',clave:'demo7kq2mz8p',nombre:'Laura Restrepo',celular:'3104567890',sellos:7,premios_disponibles:0,premios_canjeados:1,sellos_totales:17,ultima_visita:d(3)},
+      {id:'c2',negocio_id:'pizza-gourmet',codigo:'PG-20517',clave:'demob3x9wn4t',nombre:'Andrés Palacios',celular:'3008881122',sellos:2,premios_disponibles:1,premios_canjeados:0,sellos_totales:12,ultima_visita:d(1)},
+      {id:'c3',negocio_id:'barberia',codigo:'BB-77340',clave:'demoh5r2cv6y',nombre:'Camilo Mosquera',celular:'3125550099',sellos:9,premios_disponibles:0,premios_canjeados:0,sellos_totales:9,ultima_visita:d(6)}
+    ],
+    movs:[
+      {fecha:d(3),negocio_id:'pizza-gourmet',cliente_id:'c1',tipo:'SELLO',cantidad:1},
+      {fecha:d(10),negocio_id:'pizza-gourmet',cliente_id:'c1',tipo:'CANJE',cantidad:1},
+      {fecha:d(1),negocio_id:'pizza-gourmet',cliente_id:'c2',tipo:'SELLO',cantidad:1},
+      {fecha:d(1),negocio_id:'pizza-gourmet',cliente_id:'c2',tipo:'PREMIO',cantidad:1}
+    ]
+  };
+}
+function loadDB(){try{const s=localStorage.getItem(DB_KEY);DB=s?JSON.parse(s):seed()}catch(e){DB=seed()}}
+function saveDB(){try{localStorage.setItem(DB_KEY,JSON.stringify(DB))}catch(e){}}
+const fmtF = iso => new Date(iso).toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'numeric',minute:'2-digit'});
+const hoyStr = () => new Date().toLocaleDateString('en-CA');
+async function mock(p){
+  await new Promise(r=>setTimeout(r,180));
+  const neg = id => {const n=DB.negocios.find(x=>x.id===id);if(!n)throw new Error('Negocio no encontrado');return n};
+  const pub = n => ({id:n.id,nombre:n.nombre,logo_url:n.logo_url,color_principal:n.color_principal,color_secundario:n.color_secundario,sellos_meta:n.sellos_meta,premio:n.premio,regla:n.regla,link_resena_google:n.link_resena_google,whatsapp:n.whatsapp});
+  const cp = c => Object.assign({},c,{ultima_visita:c.ultima_visita?fmtF(c.ultima_visita):''});
+  const pin = () => {const n=neg(p.negocio);if(String(p.pin)!==String(n.pin_cajero))throw new Error('PIN incorrecto');return n};
+  const resumen = id => {const cl=DB.clientes.filter(c=>c.negocio_id===id);const mh=DB.movs.filter(m=>m.negocio_id===id&&new Date(m.fecha).toLocaleDateString('en-CA')===hoyStr());const s=t=>mh.filter(m=>m.tipo===t).reduce((a,m)=>a+m.cantidad,0);return {negocio:pub(neg(id)),clientes:cl.length,registros_hoy:mh.filter(m=>m.tipo==='REGISTRO').length,sellos_hoy:s('SELLO'),canjes_hoy:s('CANJE'),premios_pendientes:cl.reduce((a,c)=>a+c.premios_disponibles,0)}};
+  const registrar = origen => {
+    const n=neg(p.negocio);const nombre=String(p.nombre||'').trim().replace(/\s+/g,' ').toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase());
+    if(nombre.length<2)throw new Error('Escribe tu nombre');
+    let cel=String(p.celular||'').replace(/\D/g,'');if(cel.length===12&&cel.startsWith('57'))cel=cel.slice(2);
+    if(cel.length!==10)throw new Error('El celular debe tener 10 dígitos');
+    if(origen==='QR'&&!p.acepta)throw new Error('Debes aceptar el tratamiento de datos');
+    const ex=DB.clientes.find(c=>c.negocio_id===n.id&&c.celular===cel);
+    if(ex)return {nuevo:false,clave:ex.clave,codigo:ex.codigo,nombre:ex.nombre};
+    const c={id:'c'+Date.now(),negocio_id:n.id,codigo:n.prefijo+'-'+Math.floor(10000+Math.random()*90000),clave:Math.random().toString(36).slice(2,14),nombre,celular:cel,sellos:0,premios_disponibles:0,premios_canjeados:0,sellos_totales:0,ultima_visita:''};
+    DB.clientes.push(c);DB.movs.push({fecha:new Date().toISOString(),negocio_id:n.id,cliente_id:c.id,tipo:'REGISTRO',cantidad:0});saveDB();
+    return {nuevo:true,clave:c.clave,codigo:c.codigo,nombre};
+  };
+  switch(p.accion){
+    case 'negocio': return pub(neg(p.negocio));
+    case 'registrar': return registrar('QR');
+    case 'tarjeta': {const c=DB.clientes.find(x=>x.clave===p.clave);if(!c)throw new Error('Tarjeta no encontrada');return {negocio:pub(neg(c.negocio_id)),cliente:cp(c),historial:DB.movs.filter(m=>m.cliente_id===c.id&&m.tipo!=='REGISTRO').slice(-8).reverse().map(m=>({fecha:fmtF(m.fecha),tipo:m.tipo,cantidad:m.cantidad}))}}
+    case 'login': case 'resumen': pin(); return resumen(p.negocio);
+    case 'registrar_caja': pin(); return registrar('CAJA');
+    case 'buscar': {pin();const q=String(p.q||'').trim();if(q.length<3)throw new Error('Escribe al menos 3 caracteres');const m=q.match(/[?&]t=([a-z0-9]+)/i);const k=m?m[1]:q;const dg=q.replace(/\D/g,'');
+      return DB.clientes.filter(c=>c.negocio_id===p.negocio).filter(c=>c.clave===k||c.codigo.toUpperCase()===q.toUpperCase()||(dg.length>=4&&c.celular.endsWith(dg))||c.nombre.toLowerCase().includes(q.toLowerCase())).slice(0,10).map(cp)}
+    case 'sello': {const n=pin();const c=DB.clientes.find(x=>x.id===p.cliente_id&&x.negocio_id===n.id);if(!c)throw new Error('Cliente no encontrado');
+      const cant=Math.max(1,Math.min(5,Number(p.cantidad)||1));
+      const hoyS=DB.movs.filter(m=>m.cliente_id===c.id&&m.tipo==='SELLO'&&new Date(m.fecha).toLocaleDateString('en-CA')===hoyStr()).reduce((a,m)=>a+m.cantidad,0);
+      if(n.max_sellos_dia>0&&hoyS+cant>n.max_sellos_dia)throw new Error('Este cliente ya tiene '+hoyS+' sello(s) hoy. Máximo '+n.max_sellos_dia+' por día.');
+      c.sellos+=cant;c.sellos_totales+=cant;let g=0;while(c.sellos>=n.sellos_meta){c.sellos-=n.sellos_meta;c.premios_disponibles++;g++}
+      c.ultima_visita=new Date().toISOString();const f=new Date().toISOString();
+      DB.movs.push({fecha:f,negocio_id:n.id,cliente_id:c.id,tipo:'SELLO',cantidad:cant});if(g)DB.movs.push({fecha:f,negocio_id:n.id,cliente_id:c.id,tipo:'PREMIO',cantidad:g});saveDB();
+      return {cliente:cp(c),gano_premio:g}}
+    case 'canjear': {const n=pin();const c=DB.clientes.find(x=>x.id===p.cliente_id&&x.negocio_id===n.id);if(!c)throw new Error('Cliente no encontrado');if(c.premios_disponibles<1)throw new Error('Este cliente no tiene premios disponibles');
+      c.premios_disponibles--;c.premios_canjeados++;c.ultima_visita=new Date().toISOString();DB.movs.push({fecha:new Date().toISOString(),negocio_id:n.id,cliente_id:c.id,tipo:'CANJE',cantidad:1});saveDB();return {cliente:cp(c)}}
+  }
+  throw new Error('Acción no válida');
+}
+
+/* ============ VISTAS ============ */
+function bizHeader(n, sub){
+  return `<div class="biz"><div class="bizlogo">${n.logo_url?`<img src="${esc(n.logo_url)}" alt="">`:esc(initials(n.nombre))}</div>
+  <div><h1>${esc(n.nombre)}</h1>${sub?`<p class="muted small">${sub}</p>`:''}</div></div>`;
+}
+
+// ---------- REGISTRO ----------
+async function vistaRegistro(negocioId){
+  const v=$('#view');v.innerHTML='<p class="muted">Cargando…</p>';
+  let n;try{n=await api('negocio',{negocio:negocioId})}catch(e){v.innerHTML=`<p class="err">${esc(e.message)}</p>`;return}
+  paint(v,n);
+  v.innerHTML=`${bizHeader(n,'Tarjeta de lealtad digital')}
+  <div class="card" id="pv"><div class="top"><div><div class="label" style="color:inherit;opacity:.7">Tu premio</div><div class="who">${esc(n.premio)}</div></div></div>
+    <div class="stamps">${Array.from({length:n.sellos_meta},(_,i)=>`<div class="st ${i===n.sellos_meta-1?'goal':''}">${i===n.sellos_meta-1?GIFT_SVG:i+1}</div>`).join('')}</div>
+    <p class="rule">Completa ${n.sellos_meta} sellos y te lo regalamos. ${esc(n.regla||'')}</p></div>
+  <form class="panel" id="fReg" novalidate>
+    <h2>Crea tu tarjeta en 10 segundos</h2>
+    <label class="f" for="rNombre">Tu nombre<input id="rNombre" type="text" autocomplete="name" placeholder="Ej. Laura Restrepo" required></label>
+    <label class="f" for="rCel">Tu celular<input id="rCel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="300 123 4567" required></label>
+    <label class="check" for="rAcepta"><input id="rAcepta" type="checkbox"> <span>Autorizo a ${esc(n.nombre)} a tratar mis datos para el programa de lealtad, según la Ley 1581 de 2012. Puedo pedir que me borren cuando quiera.</span></label>
+    <p class="err" id="rErr"></p>
+    <button class="btn brandbtn block" id="rBtn" type="submit">Crear mi tarjeta</button>
+  </form>`;
+  paint($('#pv'),n);
+  $('#fReg').addEventListener('submit',async e=>{
+    e.preventDefault();$('#rErr').textContent='';$('#rBtn').disabled=true;$('#rBtn').textContent='Creando…';
+    try{
+      const r=await api('registrar',{negocio:n.id,nombre:$('#rNombre').value,celular:$('#rCel').value,acepta:$('#rAcepta').checked});
+      try{localStorage.setItem('t10_mi_'+n.id,r.clave)}catch(_){}
+      toast(r.nuevo?'¡Listo! Ya tienes tu tarjeta':'Ya tenías tarjeta, aquí está');
+      ir('tarjeta',{clave:r.clave});
+    }catch(err){$('#rErr').textContent=err.message;$('#rBtn').disabled=false;$('#rBtn').textContent='Crear mi tarjeta'}
+  });
+}
+
+// ---------- TARJETA ----------
+function tarjetaHTML(n,c,anim){
+  const meta=n.sellos_meta;
+  const st=Array.from({length:meta},(_,i)=>{
+    const on=i<c.sellos, goal=i===meta-1;
+    return `<div class="st ${on?'on':''} ${!on&&goal?'goal':''} ${on&&anim&&i===c.sellos-1?'pop':''}">${on?STAMP_SVG:(goal?GIFT_SVG:i+1)}</div>`}).join('');
+  const faltan=meta-c.sellos;
+  return `<div class="card" id="tc">
+    <div class="top"><div><div class="label" style="color:inherit;opacity:.7">${esc(n.nombre)}</div><div class="who">${esc(c.nombre)}</div></div><div class="code">${esc(c.codigo)}</div></div>
+    ${c.premios_disponibles>0?`<div class="prize"><span class="n">${c.premios_disponibles}</span><span>${c.premios_disponibles===1?'premio listo':'premios listos'} para reclamar: ${esc(n.premio)}</span></div>`:''}
+    <div class="stamps">${st}</div>
+    <div class="prog"><span><b>${c.sellos}</b> de ${meta} sellos</span><span>${faltan===1?'¡Te falta 1!':'Te faltan '+faltan}</span></div>
+    <p class="rule">Premio: ${esc(n.premio)}. ${esc(n.regla||'')}</p>
+  </div>`;
+}
+async function vistaTarjeta(clave){
+  const v=$('#view');v.innerHTML='<p class="muted">Cargando tu tarjeta…</p>';
+  let d;try{d=await api('tarjeta',{clave})}catch(e){v.innerHTML=`<div class="panel"><h2>No encontramos esta tarjeta</h2><p class="muted">Revisa el link o pide en caja que te la busquen con tu celular.</p></div>`;return}
+  const {negocio:n,cliente:c,historial:h}=d;paint(v,n);
+  v.innerHTML=`${tarjetaHTML(n,c,false)}
+  <div class="panel"><div class="qrbox"><div class="q" id="qrT"></div><div><b>Muéstralo en caja</b><p class="small" style="color:#555">El cajero escanea este código o te busca por tu celular. Código: <span style="font-family:var(--mono);font-weight:700">${esc(c.codigo)}</span></p></div></div></div>
+  ${n.link_resena_google?`<a class="btn ghost block" href="${esc(n.link_resena_google)}" target="_blank" rel="noopener">★ Califícanos en Google</a>`:''}
+  <div class="panel"><div class="label">Guarda tu tarjeta</div><p class="small muted">Agrega este link a tu pantalla de inicio o guárdalo en tus favoritos. Pronto también en Google Wallet.</p>
+    <div class="searchrow"><input type="text" id="lnk" readonly value="${esc(linkTarjeta(c.clave))}"><button class="btn ghost" id="cp" type="button">Copiar</button></div></div>
+  ${h.length?`<div class="panel"><div class="label">Tus últimas visitas</div><div class="hist">${h.map(m=>`<div><span>${esc(m.fecha)}</span><span class="tag ${m.tipo}">${m.tipo==='SELLO'?'+'+m.cantidad+' sello':m.tipo==='CANJE'?'Premio reclamado':'Premio ganado'}</span></div>`).join('')}</div></div>`:''}`;
+  paint($('#tc'),n);qr($('#qrT'),linkTarjeta(c.clave),96);
+  $('#cp').onclick=async()=>{try{await navigator.clipboard.writeText($('#lnk').value);toast('Link copiado')}catch(_){$('#lnk').select();toast('Selecciona y copia el link')}};
+}
+
+// ---------- CAJERO ----------
+let CJ={negocio:null,pin:'',cajero:'',sel:null,cant:1};
+async function vistaCajero(negocioId){
+  const v=$('#view');CJ.negocio=negocioId;CJ.sel=null;
+  let n;try{n=await api('negocio',{negocio:negocioId})}catch(e){v.innerHTML=`<p class="err">${esc(e.message)}</p>`;return}
+  paint(v,n);
+  let guardado='';try{guardado=sessionStorage.getItem('t10_pin_'+negocioId)||''}catch(_){}
+  if(guardado){CJ.pin=guardado;try{CJ.cajero=sessionStorage.getItem('t10_caj_'+negocioId)||''}catch(_){};return panelCajero(n)}
+  v.innerHTML=`${bizHeader(n,'Pantalla del cajero')}
+  <form class="panel" id="fPin" novalidate>
+    <label class="f" for="cNom">Tu nombre (cajero)<input id="cNom" type="text" placeholder="Ej. Yuli"></label>
+    <label class="f" for="cPin">PIN del negocio<input id="cPin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••"></label>
+    ${DEMO?`<p class="small muted">Demo: el PIN de ${esc(n.nombre)} es <b>${esc(DB.negocios.find(x=>x.id===n.id).pin_cajero)}</b></p>`:''}
+    <p class="err" id="pErr"></p><button class="btn block" type="submit">Entrar</button></form>`;
+  $('#fPin').addEventListener('submit',async e=>{e.preventDefault();$('#pErr').textContent='';
+    try{await api('login',{negocio:n.id,pin:$('#cPin').value});CJ.pin=$('#cPin').value;CJ.cajero=$('#cNom').value.trim();
+      try{sessionStorage.setItem('t10_pin_'+n.id,CJ.pin);sessionStorage.setItem('t10_caj_'+n.id,CJ.cajero)}catch(_){}
+      panelCajero(n)}catch(err){$('#pErr').textContent=err.message}});
+}
+async function panelCajero(n){
+  const v=$('#view');
+  v.innerHTML=`${bizHeader(n,'Caja'+(CJ.cajero?' · '+esc(CJ.cajero):''))}
+  <div class="stats" id="stats"></div>
+  <div class="panel">
+    <div class="label">Buscar cliente</div>
+    <div class="searchrow"><input type="search" id="q" placeholder="Celular, código o nombre" autocomplete="off"><button class="btn" id="bq" type="button">Buscar</button></div>
+    <div class="searchrow"><button class="btn ghost" id="scan" type="button" style="flex:1">Escanear QR</button><button class="btn ghost" id="nuevo" type="button" style="flex:1">Registrar cliente</button></div>
+    <div id="reader" hidden></div>
+    <p class="err" id="qErr"></p>
+    <div class="results" id="res"></div>
+  </div>
+  <div id="sel"></div>
+  <div class="searchrow"><button class="btn ghost" id="qrReg" type="button" style="flex:1">QR de registro para el mostrador</button><button class="btn ghost" id="salir" type="button">Salir</button></div>
+  <div id="extra"></div>`;
+  cargarStats(n);
+  const buscar=async()=>{$('#qErr').textContent='';$('#res').innerHTML='';
+    try{const r=await api('buscar',{negocio:n.id,pin:CJ.pin,q:$('#q').value});
+      if(!r.length){$('#res').innerHTML='<p class="muted small">Sin resultados. Revisa el dato o registra al cliente.</p>';return}
+      if(r.length===1)return seleccionar(n,r[0]);
+      $('#res').innerHTML=r.map((c,i)=>`<button class="res" data-i="${i}" type="button"><div><b>${esc(c.nombre)}</b><div class="meta">${esc(c.codigo)} · ***${esc(c.celular.slice(-4))}</div></div><span class="pill ${c.premios_disponibles?'gift':''}">${c.premios_disponibles?'🎁 '+c.premios_disponibles:c.sellos+'/'+n.sellos_meta}</span></button>`).join('');
+      $('#res').querySelectorAll('.res').forEach(b=>b.onclick=()=>seleccionar(n,r[b.dataset.i]));
+    }catch(e){$('#qErr').textContent=e.message}};
+  $('#bq').onclick=buscar;$('#q').addEventListener('keydown',e=>{if(e.key==='Enter')buscar()});
+  $('#scan').onclick=()=>escanear(txt=>{$('#q').value=txt;buscar()});
+  $('#nuevo').onclick=()=>formNuevo(n);
+  $('#qrReg').onclick=()=>{const x=$('#extra');if(x.innerHTML){x.innerHTML='';return}
+    x.innerHTML=`<div class="poster"><div class="label" style="color:#666">Pega este QR en el mostrador</div><h2>¡Pide tu tarjeta de ${esc(n.nombre)}!</h2><div class="pq" id="pq"></div><p><b>${n.sellos_meta} sellos = ${esc(n.premio)}</b></p><p class="small" style="color:#555;word-break:break-all">${esc(linkRegistro(n.id))}</p><p class="small" style="color:#888">Tarjeta 10</p></div>`;
+    qr($('#pq'),linkRegistro(n.id),220)};
+  $('#salir').onclick=()=>{try{sessionStorage.removeItem('t10_pin_'+n.id)}catch(_){}CJ.pin='';vistaCajero(n.id)};
+}
+async function cargarStats(n){
+  try{const s=await api('resumen',{negocio:n.id,pin:CJ.pin});
+    $('#stats').innerHTML=[['clientes','Clientes'],['sellos_hoy','Sellos hoy'],['canjes_hoy','Canjes hoy'],['premios_pendientes','Premios sin reclamar']].map(([k,l])=>`<div class="stat"><b>${s[k]}</b><span>${l}</span></div>`).join('')}catch(_){}
+}
+function seleccionar(n,c){
+  CJ.sel=c;CJ.cant=1;$('#res').innerHTML='';
+  const box=$('#sel');
+  box.innerHTML=`${tarjetaHTML(n,c,false)}
+  <div class="panel">
+    <div class="label">Dar sellos</div>
+    <div class="stepper"><button type="button" id="mn" aria-label="Menos">−</button><output id="ct">1</output><button type="button" id="mx" aria-label="Más">+</button></div>
+    <div class="actions"><button class="btn brandbtn" id="dar" type="button">Dar sello</button><button class="btn red" id="can" type="button" ${c.premios_disponibles?'':'disabled'}>Canjear premio</button></div>
+    <div id="conf"></div><p class="err" id="sErr"></p>
+    <p class="small muted">Última visita: ${esc(c.ultima_visita||'primera vez')} · ${c.sellos_totales} sellos en total · ${c.premios_canjeados} premios reclamados</p>
+  </div>`;
+  paint($('#tc'),n);box.scrollIntoView({behavior:'smooth',block:'start'});
+  $('#mn').onclick=()=>{CJ.cant=Math.max(1,CJ.cant-1);$('#ct').textContent=CJ.cant;$('#dar').textContent=CJ.cant>1?'Dar '+CJ.cant+' sellos':'Dar sello'};
+  $('#mx').onclick=()=>{CJ.cant=Math.min(5,CJ.cant+1);$('#ct').textContent=CJ.cant;$('#dar').textContent='Dar '+CJ.cant+' sellos'};
+  $('#dar').onclick=async()=>{$('#sErr').textContent='';$('#dar').disabled=true;
+    try{const r=await api('sello',{negocio:n.id,pin:CJ.pin,cliente_id:c.id,cantidad:CJ.cant,cajero:CJ.cajero});
+      toast(r.gano_premio?`🎉 ¡${r.cliente.nombre} ganó ${n.premio}!`:`Sello dado a ${r.cliente.nombre}`);
+      seleccionar(n,r.cliente);document.querySelectorAll('#tc .st.on').forEach((e,i,a)=>{if(i===a.length-1)e.classList.add('pop')});cargarStats(n);
+    }catch(e){$('#sErr').textContent=e.message;$('#dar').disabled=false}};
+  $('#can').onclick=()=>{$('#conf').innerHTML=`<div class="confirm"><b>¿Entregar ${esc(n.premio)} a ${esc(c.nombre)}?</b><p class="small muted">Se descuenta 1 premio de su tarjeta. Esto no se puede deshacer desde la caja.</p><div class="actions"><button class="btn red" id="si" type="button">Sí, entregar</button><button class="btn ghost" id="no" type="button">Cancelar</button></div></div>`;
+    $('#no').onclick=()=>$('#conf').innerHTML='';
+    $('#si').onclick=async()=>{try{const r=await api('canjear',{negocio:n.id,pin:CJ.pin,cliente_id:c.id,cajero:CJ.cajero});toast('Premio entregado');seleccionar(n,r.cliente);cargarStats(n)}catch(e){$('#sErr').textContent=e.message}}};
+}
+function formNuevo(n){
+  const box=$('#sel');
+  box.innerHTML=`<form class="panel" id="fN" novalidate><h2>Registrar cliente en caja</h2>
+    <label class="f" for="nN">Nombre<input id="nN" type="text"></label>
+    <label class="f" for="nC">Celular<input id="nC" type="tel" inputmode="numeric"></label>
+    <p class="small muted">Pídele permiso de palabra para guardar sus datos.</p><p class="err" id="nErr"></p>
+    <button class="btn block" type="submit">Crear tarjeta</button></form>`;
+  $('#fN').addEventListener('submit',async e=>{e.preventDefault();
+    try{const r=await api('registrar_caja',{negocio:n.id,pin:CJ.pin,nombre:$('#nN').value,celular:$('#nC').value,cajero:CJ.cajero});
+      const l=await api('buscar',{negocio:n.id,pin:CJ.pin,q:r.codigo});toast(r.nuevo?'Tarjeta creada':'Ya estaba registrado');cargarStats(n);if(l[0])seleccionar(n,l[0]);
+    }catch(err){$('#nErr').textContent=err.message}});
+}
+let scanner=null;
+function escanear(onText){
+  const r=$('#reader');
+  if(DEMO){$('#qErr').textContent='En la demo la cámara no está disponible. En tarjeta10.com.co el botón abre la cámara del celular o tablet de caja.';return}
+  const start=()=>{r.hidden=false;scanner=new Html5Qrcode('reader');
+    scanner.start({facingMode:'environment'},{fps:10,qrbox:220},txt=>{scanner.stop().then(()=>{r.hidden=true});onText(txt)}).catch(e=>{r.hidden=true;$('#qErr').textContent='No pude abrir la cámara: '+e})};
+  if(window.Html5Qrcode)return start();
+  const s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onload=start;document.head.appendChild(s);
+}
+
+// ---------- INICIO (sin parámetros) ----------
+function vistaInicio(){
+  $('#view').innerHTML=`<section class="landing"><div class="hero"><div class="label">Lealtad digital para tu negocio</div>
+    <p class="big">10 sellos.<br>1 cliente fiel.</p>
+    <p class="muted">Tarjetas de sellos en el celular de tus clientes, sin app. Ellos se registran con un QR, tu cajero da sellos en segundos y tú ves quién vuelve.</p></div>
+    <div class="panel feat">
+      <div><i>1</i><p><b>Registro con QR en el mostrador.</b> Nombre y celular, nada más.</p></div>
+      <div><i>2</i><p><b>Tarjeta con tus colores y tu logo.</b> Se abre con un link, no hay que descargar nada.</p></div>
+      <div><i>3</i><p><b>Pantalla de caja.</b> Busca por celular o escanea, da el sello y canjea el premio.</p></div>
+      <div><i>4</i><p><b>Más reseñas en Google.</b> Cada tarjeta trae el botón para calificarte.</p></div>
+    </div>
+    ${CONFIG.WHATSAPP_VENTAS?`<a class="btn red block" href="https://wa.me/${CONFIG.WHATSAPP_VENTAS}?text=Quiero%20Tarjeta%2010%20para%20mi%20negocio" target="_blank" rel="noopener">Quiero Tarjeta 10 para mi negocio</a>`:''}
+  </section>`;
+}
+
+/* ============ NAVEGACIÓN ============ */
+let ESTADO={vista:'registro',negocio:'pizza-gourmet',clave:null};
+function ir(vista,extra={}){
+  Object.assign(ESTADO,{vista},extra);
+  if(DEMO){document.querySelectorAll('#demoBar [data-v]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===vista?'true':'false'))}
+  window.scrollTo({top:0});
+  if(vista==='registro')return vistaRegistro(ESTADO.negocio);
+  if(vista==='cajero')return vistaCajero(ESTADO.negocio);
+  if(vista==='tarjeta'){
+    let k=ESTADO.clave;
+    if(DEMO&&(!k||!DB.clientes.some(c=>c.clave===k&&c.negocio_id===ESTADO.negocio))){
+      let mia='';try{mia=localStorage.getItem('t10_mi_'+ESTADO.negocio)||''}catch(_){}
+      const c=DB.clientes.find(x=>x.clave===mia)||DB.clientes.find(x=>x.negocio_id===ESTADO.negocio);
+      k=c?c.clave:null;
+    }
+    if(!k){$('#view').innerHTML='<div class="panel"><p>Aún no hay tarjetas en este negocio. Crea una en <b>Registro</b>.</p></div>';return}
+    return vistaTarjeta(k);
+  }
+  vistaInicio();
+}
+function arrancar(){
+  if(DEMO){
+    loadDB();$('#demoBar').hidden=false;
+    $('#demoBiz').innerHTML=DB.negocios.map(n=>`<option value="${n.id}">${esc(n.nombre)}</option>`).join('');
+    $('#demoBiz').onchange=e=>{ESTADO.negocio=e.target.value;ESTADO.clave=null;ir(ESTADO.vista)};
+    document.querySelectorAll('#demoBar [data-v]').forEach(b=>b.onclick=()=>ir(b.dataset.v,{clave:null}));
+    return ir('tarjeta');
+  }
+  const q=new URLSearchParams(location.search);
+  if(q.get('t'))return ir('tarjeta',{clave:q.get('t')});
+  if(q.get('r'))return ir('registro',{negocio:q.get('r')});
+  if(q.get('c'))return ir('cajero',{negocio:q.get('c')});
+  ir('inicio');
+}
+arrancar();
+</script>
+</body>
+</html>
